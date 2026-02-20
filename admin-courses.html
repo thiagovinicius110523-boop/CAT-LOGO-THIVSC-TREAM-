@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Cursos — ENTHIVSC STREAM</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <a class="brand brand--link" href="./admin.html" style="text-decoration:none;">
+        <div class="brand__mark">E</div>
+        <div class="brand__text">
+          <div class="brand__name">Admin • Cursos</div>
+          <div class="brand__tag">Categorias e Subcategorias</div>
+        </div>
+      </a>
+
+      <div class="topbar__actions">
+        <a class="btn btn--ghost" href="./admin.html">Voltar</a>
+        <button id="btnLogoutTop" class="btn btn--ghost" type="button">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="adminCoursesContent" style="display:none;">
+    <section class="panel">
+      <div class="notice">
+        <div class="notice__title">Editar categorias dos cursos</div>
+        <div class="notice__text">
+          Você pode mudar <strong>Categoria</strong>, <strong>Subcategoria</strong> e <strong>Sub-subcategoria</strong>.
+          Clique em <strong>Salvar</strong> no final.
+        </div>
+      </div>
+
+      <div class="panel__row">
+        <div class="field field--grow">
+          <label class="label" for="q">Buscar curso</label>
+          <input id="q" class="input" type="search" placeholder="Digite parte do título..." />
+        </div>
+        <div class="field">
+          <label class="label">&nbsp;</label>
+          <button id="btnReload" class="btn btn--ghost" type="button">Recarregar</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="meta" id="meta">Carregando...</div>
+
+      <div style="overflow:auto; margin-top:10px;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">Curso</th>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">Categoria</th>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">Subcategoria</th>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">Sub-sub</th>
+              <th style="text-align:left; padding:10px; border-bottom:1px solid rgba(255,255,255,.08);">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="panel__row panel__row--between" style="align-items:center;">
+        <div class="meta" id="saveMeta">Nenhuma alteração ainda.</div>
+        <div class="row">
+          <button id="btnSaveAll" class="btn" type="button">Salvar tudo</button>
+        </div>
+      </div>
+
+      <pre class="console" id="console"></pre>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./app.js"></script>
+  <script src="./admin-courses.js"></script>
+</body>
+</html>
