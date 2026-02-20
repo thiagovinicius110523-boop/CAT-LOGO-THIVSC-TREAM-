@@ -1,42 +1,59 @@
-(async()=>{
-  const el = document.getElementById("appContent");
-  const show = (msg)=>{
-    if(!el) return;
-    el.style.display="block";
-    el.innerHTML = `<h2>${msg}</h2><pre id="debugBox" style="white-space:pre-wrap;background:#111;padding:12px;border-radius:8px;"></pre>`;
-  };
+// index.js — versão compatível com app.js (requireLogin global)
 
-  try{
-    // 1) garante login
-    const ok = await window.ENGTHIVSC.requireLogin('index.html');
-    if(!ok) return;
+document.addEventListener("DOMContentLoaded", async () => {
+  // exige login (B2)
+  const user = await requireLogin("index.html");
+  if (!user) return;
 
-    // 2) logout
-    await window.ENGTHIVSC.setupLogout();
+  // mostra botão sair (se existir)
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnLogout) btnLogout.style.display = "inline-flex";
+  setupLogout("btnLogout");
 
-    // 3) mostra conteúdo base (mesmo que o resto falhe)
-    show("Logado ✅");
+  // mostra conteúdo
+  const app = document.getElementById("appContent");
+  if (app) app.style.display = "block";
 
-    // 4) opcional: ping no banco para verificar RLS/conexão
-    const sb = await window.ENGTHIVSC.initSupabase();
-    if(!sb){
-      document.getElementById("debugBox").textContent = "ERRO: Supabase não inicializou. Verifique supabase-config.js (URL/ANON KEY).";
-      return;
-    }
+  // carrega cursos
+  const sb = getSB();
+  const { data: courses, error } = await sb
+    .from("courses")
+    .select("course_id,title,subtitle,category,cover_url")
+    .order("created_at", { ascending: false });
 
-    const { error, count } = await sb.from("courses").select("course_id", { count: "exact", head: true });
-    if(error){
-      document.getElementById("debugBox").textContent =
-        "Falha ao ler courses.\n" +
-        "Mensagem: " + error.message + "\n" +
-        "Dica: se a policy estiver 'authenticated read', você precisa estar logado (ok) e a policy deve existir.";
-      return;
-    }
-    document.getElementById("debugBox").textContent = `Conexão OK. Cursos cadastrados: ${count ?? "?"}`;
-  }catch(err){
-    show("Erro no carregamento ❌");
-    const box = document.getElementById("debugBox");
-    if(box) box.textContent = (err && (err.stack||err.message)) ? (err.stack||err.message) : String(err);
-    console.error(err);
+  if (error) {
+    if (app) app.innerHTML = `<p style="color:#ff6b6b">Erro ao carregar cursos: ${escapeHtml(error.message)}</p>`;
+    return;
   }
-})();
+
+  if (!courses?.length) {
+    if (app) app.innerHTML = `<p style="opacity:.85">Nenhum curso cadastrado ainda.</p>`;
+    return;
+  }
+
+  // render simples
+  if (app) {
+    app.innerHTML = `
+      <h2>Cursos</h2>
+      <div id="coursesList"></div>
+    `;
+
+    const list = document.getElementById("coursesList");
+    list.innerHTML = courses.map(c => `
+      <a class="card" href="./course.html?id=${encodeURIComponent(c.course_id)}" style="display:block;text-decoration:none;margin:10px 0;">
+        <div style="font-weight:800">${escapeHtml(c.title || "Curso")}</div>
+        ${c.subtitle ? `<div style="opacity:.8;margin-top:6px">${escapeHtml(c.subtitle)}</div>` : ""}
+        ${c.category ? `<div style="opacity:.7;margin-top:6px">Categoria: ${escapeHtml(c.category)}</div>` : ""}
+      </a>
+    `).join("");
+  }
+});
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
