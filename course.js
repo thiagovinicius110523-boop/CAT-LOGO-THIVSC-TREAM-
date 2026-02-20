@@ -1,45 +1,117 @@
-(async()=>{
-  const el = document.getElementById("appContent");
-  const show = (msg)=>{
-    if(!el) return;
-    el.style.display="block";
-    el.innerHTML = `<h2>${msg}</h2><pre id="debugBox" style="white-space:pre-wrap;background:#111;padding:12px;border-radius:8px;"></pre>`;
-  };
+// ================================
+// course.js
+// Página do curso (B2: só logado)
+// ================================
 
-  try{
-    const ok = await window.ENGTHIVSC.requireLogin('course.html');
-    if(!ok) return;
+document.addEventListener("DOMContentLoaded", async () => {
+  // Exige login
+  const user = await requireLogin("course.html");
+  if (!user) return;
 
-    await window.ENGTHIVSC.setupLogout();
-    show("Curso (debug) ✅");
+  setupLogout();
 
-    const sb = await window.ENGTHIVSC.initSupabase();
-    if(!sb){
-      document.getElementById("debugBox").textContent = "ERRO: Supabase não inicializou. Verifique supabase-config.js.";
-      return;
-    }
+  const sb = getSB();
+  const params = new URLSearchParams(location.search);
 
-    const params = new URLSearchParams(location.search);
-    const course_id = params.get("id") || params.get("course_id");
-    if(!course_id){
-      document.getElementById("debugBox").textContent = "Faltou parâmetro ?id=COURSE_ID na URL.";
-      return;
-    }
-
-    const { data, error } = await sb.from("courses").select("*").eq("course_id", course_id).maybeSingle();
-    if(error){
-      document.getElementById("debugBox").textContent = "Erro ao carregar curso: " + error.message;
-      return;
-    }
-    if(!data){
-      document.getElementById("debugBox").textContent = "Curso não encontrado para course_id=" + course_id;
-      return;
-    }
-    document.getElementById("debugBox").textContent = JSON.stringify(data, null, 2);
-  }catch(err){
-    show("Erro no carregamento ❌");
-    const box = document.getElementById("debugBox");
-    if(box) box.textContent = (err && (err.stack||err.message)) ? (err.stack||err.message) : String(err);
-    console.error(err);
+  // Ajuste: seu projeto costuma usar course_id, então aceito ?id= ou ?course_id=
+  const courseId = params.get("course_id") || params.get("id");
+  if (!courseId) {
+    showError("Curso não informado. Abra a página com ?id=SEU_COURSE_ID");
+    return;
   }
-})();
+
+  // Carrega o curso
+  const { data: course, error: courseErr } = await sb
+    .from("courses")
+    .select("*")
+    .eq("course_id", courseId)
+    .maybeSingle();
+
+  if (courseErr) {
+    showError("Erro ao carregar curso: " + courseErr.message);
+    return;
+  }
+  if (!course) {
+    showError("Curso não encontrado: " + courseId);
+    return;
+  }
+
+  // Render básico (ajuste ids conforme seu HTML)
+  setText("courseTitle", course.title || "");
+  setText("courseSubtitle", course.subtitle || "");
+  setText("courseCategory", course.category || "");
+  setImage("courseCover", course.cover_url);
+
+  // Carrega módulos
+  const { data: modules, error: modErr } = await sb
+    .from("course_modules")
+    .select("*")
+    .eq("course_id", courseId)
+    .order("order_index", { ascending: true });
+
+  if (modErr) {
+    showError("Erro ao carregar módulos: " + modErr.message);
+    return;
+  }
+
+  renderModules(modules || []);
+});
+
+// ---------- helpers ----------
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value ?? "";
+}
+
+function setImage(id, url) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!url) {
+    el.style.display = "none";
+    return;
+  }
+  el.src = url;
+  el.style.display = "";
+}
+
+function showError(msg) {
+  console.error(msg);
+  const box = document.getElementById("errorBox");
+  if (box) {
+    box.textContent = msg;
+    box.style.display = "block";
+  } else {
+    alert(msg);
+  }
+}
+
+function renderModules(modules) {
+  const list = document.getElementById("modulesList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!modules.length) {
+    list.innerHTML = `<div style="opacity:.8">Nenhum módulo cadastrado.</div>`;
+    return;
+  }
+
+  for (const m of modules) {
+    const item = document.createElement("div");
+    item.className = "module-item";
+    item.innerHTML = `
+      <div class="module-title">${escapeHtml(m.title || "Módulo")}</div>
+      <div class="module-sub">${escapeHtml(m.subtitle || "")}</div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
