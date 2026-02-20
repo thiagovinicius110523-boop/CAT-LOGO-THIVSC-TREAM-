@@ -1,91 +1,98 @@
-/**
- * app.js — helpers globais ENTHIVSC
- * Mantém compatibilidade com as funções antigas (requireAuth/setupLogout)
- * e adiciona utilitários usados pelo Admin (initSupabase/getSB/getUser/requireLogin/isAdmin).
- */
-(function(){
-  let sb = null;
+// ================================
+// app.js
+// Inicialização global + auth
+// ================================
 
-  async function initSupabase(){
-    if (sb) return sb;
-    if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) return null;
-    if (!window.supabase?.createClient) return null;
-    sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
-    return sb;
+let SB = null;
+
+function getSB() {
+  return SB;
+}
+
+async function initSupabase() {
+  if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+    console.error("Supabase config ausente.");
+    return null;
   }
 
-  function getSB(){
-    return sb;
+  if (!window.supabase?.createClient) {
+    console.error("supabase-js não carregou.");
+    return null;
   }
 
-  async function getUser(){
-    await initSupabase();
-    if (!sb) return null;
-    const { data, error } = await sb.auth.getUser();
-    if (error) return null;
-    return data?.user || null;
-  }
-
-  async function requireAuth(){
-    await initSupabase();
-    if (!sb) return { ok: true }; // permite modo "sem supabase"
-    const u = await getUser();
-    if (!u){
-      location.href = "./login.html";
-      return { ok: false };
+  SB = window.supabase.createClient(
+    window.SUPABASE_URL,
+    window.SUPABASE_ANON_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
     }
-    return { ok: true };
+  );
+
+  return SB;
+}
+
+async function requireLogin(currentPage) {
+  if (!SB) await initSupabase();
+
+  const { data } = await SB.auth.getUser();
+
+  if (!data?.user) {
+    const returnTo =
+      currentPage || location.pathname.split("/").pop() || "index.html";
+
+    location.href =
+      "./login.html?returnTo=" + encodeURIComponent(returnTo);
+
+    return null;
   }
 
-  async function requireLogin(returnTo){
-    await initSupabase();
-    if (!sb) return true;
-    const u = await getUser();
-    if (!u){
-      const rt = encodeURIComponent(returnTo || "index.html");
-      location.href = "./login.html?returnTo=" + rt;
-      return false;
-    }
-    return true;
+  return data.user;
+}
+
+async function isAdmin() {
+  if (!SB) await initSupabase();
+
+  const { data } = await SB.auth.getUser();
+  if (!data?.user) return false;
+
+  const { data: profile } = await SB
+    .from("profiles")
+    .select("role")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+
+  return profile?.role === "admin";
+}
+
+async function requireAdmin(currentPage) {
+  const user = await requireLogin(currentPage);
+  if (!user) return null;
+
+  const admin = await isAdmin();
+  if (!admin) {
+    location.href = "./index.html";
+    return null;
   }
 
-  async function setupLogout(){
-    const b = document.getElementById("btnLogout");
-    if (!b) return;
-    await initSupabase();
-    if (!sb) return;
-    const u = await getUser();
-    if (u) b.style.display = "inline-flex";
-    b.onclick = async ()=>{
-      await sb.auth.signOut();
-      location.href = "./login.html";
-    };
-  }
+  return user;
+}
 
-  async function isAdmin(){
-    await initSupabase();
-    if (!sb) return false;
-    const u = await getUser();
-    if (!u) return false;
+function setupLogout(buttonId = "btnLogout") {
+  const btn = document.getElementById(buttonId);
+  if (!btn) return;
 
-    const { data, error } = await sb
-      .from("profiles")
-      .select("role")
-      .eq("user_id", u.id)
-      .maybeSingle();
-
-    if (error) return false;
-    return (data?.role === "admin");
-  }
-
-  window.ENGTHIVSC = window.ENGTHIVSC || {};
-  Object.assign(window.ENGTHIVSC, {
-    initSupabase,
-    getSB,
-    getUser,
-    requireAuth,
-    requireLogin,
-    setupLogout,
-    isAdmin
+  btn.addEventListener("click", async () => {
+    if (!SB) await initSupabase();
+    await SB.auth.signOut();
+    location.href = "./login.html";
   });
-})();
+}
+
+// Inicializa automaticamente quando carregar
+document.addEventListener("DOMContentLoaded", async () => {
+  await initSupabase();
+});
