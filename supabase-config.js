@@ -3,5 +3,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const APP_BASE_URL = "https://thiagovinicius110523-boop.github.io/CAT-LOGO-THIVSC-STREAM";
 
-// Exporta para o resto do app
+window.SUPABASE_URL = SUPABASE_URL;
+window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
 window.APP_BASE_URL = APP_BASE_URL;
