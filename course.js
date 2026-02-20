@@ -1,111 +1,97 @@
-// ================================
-// course.js
-// Página do curso (B2: só logado)
-// ================================
+// course.js — compatível com seu course.html atual (apenas appContent + btnLogout)
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // Exige login
+  // exige login (B2)
   const user = await requireLogin("course.html");
   if (!user) return;
 
-  setupLogout();
+  // mostra botão sair
+  const btnLogout = document.getElementById("btnLogout");
+  if (btnLogout) btnLogout.style.display = "inline-flex";
+  setupLogout("btnLogout");
+
+  // mostra o conteúdo da página
+  const app = document.getElementById("appContent");
+  if (app) app.style.display = "block";
 
   const sb = getSB();
   const params = new URLSearchParams(location.search);
-
-  // Ajuste: seu projeto costuma usar course_id, então aceito ?id= ou ?course_id=
   const courseId = params.get("course_id") || params.get("id");
+
+  // se não passou id, mostra instrução
   if (!courseId) {
-    showError("Curso não informado. Abra a página com ?id=SEU_COURSE_ID");
+    app.innerHTML = `
+      <h2>Conteúdo do Curso</h2>
+      <p style="opacity:.85">
+        Nenhum curso foi selecionado. Abra esta página com <b>?id=SEU_COURSE_ID</b>.
+      </p>
+    `;
     return;
   }
 
-  // Carrega o curso
+  // busca curso
   const { data: course, error: courseErr } = await sb
     .from("courses")
-    .select("*")
+    .select("course_id,title,subtitle,category,cover_url")
     .eq("course_id", courseId)
     .maybeSingle();
 
   if (courseErr) {
-    showError("Erro ao carregar curso: " + courseErr.message);
+    app.innerHTML = `
+      <h2>Conteúdo do Curso</h2>
+      <p style="color:#ff6b6b">Erro ao carregar curso: ${escapeHtml(courseErr.message)}</p>
+    `;
     return;
   }
+
   if (!course) {
-    showError("Curso não encontrado: " + courseId);
+    app.innerHTML = `
+      <h2>Conteúdo do Curso</h2>
+      <p style="opacity:.85">Curso não encontrado: <b>${escapeHtml(courseId)}</b></p>
+    `;
     return;
   }
 
-  // Render básico (ajuste ids conforme seu HTML)
-  setText("courseTitle", course.title || "");
-  setText("courseSubtitle", course.subtitle || "");
-  setText("courseCategory", course.category || "");
-  setImage("courseCover", course.cover_url);
-
-  // Carrega módulos
+  // busca módulos
   const { data: modules, error: modErr } = await sb
     .from("course_modules")
-    .select("*")
+    .select("module_id,title,subtitle,order_index")
     .eq("course_id", courseId)
     .order("order_index", { ascending: true });
 
   if (modErr) {
-    showError("Erro ao carregar módulos: " + modErr.message);
-    return;
-  }
-
-  renderModules(modules || []);
-});
-
-// ---------- helpers ----------
-function setText(id, value) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = value ?? "";
-}
-
-function setImage(id, url) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  if (!url) {
-    el.style.display = "none";
-    return;
-  }
-  el.src = url;
-  el.style.display = "";
-}
-
-function showError(msg) {
-  console.error(msg);
-  const box = document.getElementById("errorBox");
-  if (box) {
-    box.textContent = msg;
-    box.style.display = "block";
-  } else {
-    alert(msg);
-  }
-}
-
-function renderModules(modules) {
-  const list = document.getElementById("modulesList");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  if (!modules.length) {
-    list.innerHTML = `<div style="opacity:.8">Nenhum módulo cadastrado.</div>`;
-    return;
-  }
-
-  for (const m of modules) {
-    const item = document.createElement("div");
-    item.className = "module-item";
-    item.innerHTML = `
-      <div class="module-title">${escapeHtml(m.title || "Módulo")}</div>
-      <div class="module-sub">${escapeHtml(m.subtitle || "")}</div>
+    app.innerHTML = `
+      <h2>${escapeHtml(course.title || "Curso")}</h2>
+      <p style="color:#ff6b6b">Erro ao carregar módulos: ${escapeHtml(modErr.message)}</p>
     `;
-    list.appendChild(item);
+    return;
   }
-}
+
+  // render
+  app.innerHTML = `
+    <h2>${escapeHtml(course.title || "Curso")}</h2>
+    ${course.subtitle ? `<p style="opacity:.85">${escapeHtml(course.subtitle)}</p>` : ""}
+    ${course.category ? `<p style="opacity:.7">Categoria: ${escapeHtml(course.category)}</p>` : ""}
+    ${course.cover_url ? `<img src="${escapeHtml(course.cover_url)}" alt="Capa" style="max-width:100%;border-radius:12px;margin:12px 0;" />` : ""}
+    <hr style="opacity:.2;margin:16px 0;" />
+    <h3>Módulos</h3>
+    <div id="modulesList"></div>
+  `;
+
+  const list = document.getElementById("modulesList");
+
+  if (!modules?.length) {
+    list.innerHTML = `<p style="opacity:.85">Nenhum módulo cadastrado ainda.</p>`;
+    return;
+  }
+
+  list.innerHTML = modules.map(m => `
+    <div style="padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:12px;margin:10px 0;">
+      <div style="font-weight:700">${escapeHtml(m.title || "Módulo")}</div>
+      ${m.subtitle ? `<div style="opacity:.8;margin-top:6px">${escapeHtml(m.subtitle)}</div>` : ""}
+    </div>
+  `).join("");
+});
 
 function escapeHtml(str) {
   return String(str ?? "")
