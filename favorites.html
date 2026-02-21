@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Favoritos — ENTHIVSC STREAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand brand--link" href="./index.html" style="text-decoration:none;">
+      <div class="brand__mark">E</div>
+      <div class="brand__text">
+        <div class="brand__name">Favoritos</div>
+        <div class="brand__tag">Acesso rápido aos cursos salvos</div>
+      </div>
+    </a>
+
+    <div class="topbar__actions">
+      <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+      <a id="btnProfile" class="btn btn--ghost" href="./profile.html" style="display:none;">Perfil</a>
+
+      <div id="userChip" class="userchip" style="display:none;">
+        <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
+        <div style="display:flex;flex-direction:column;line-height:1.1;">
+          <div id="userName" class="userchip__name">Usuário</div>
+          <div id="userRole" class="userchip__role">—</div>
+        </div>
+      </div>
+
+      <button id="btnLogout" class="btn btn--ghost" style="display:none;">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="appContent" style="display:none;">
+  <div class="panel" style="margin-top:16px;">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <input id="search" class="input" placeholder="Buscar em favoritos..." style="flex:1; min-width:220px;" />
+      <select id="filterCategory" class="input" style="min-width:220px;">
+        <option value="">Todas categorias</option>
+      </select>
+      <select id="sortBy" class="input" style="min-width:200px;">
+        <option value="recent">Mais recentes</option>
+        <option value="az">A–Z</option>
+        <option value="progress">Progresso</option>
+      </select>
+    </div>
+    <div id="console" class="console" style="display:none;margin-top:10px;"></div>
+  </div>
+
+  <div id="coursesList" class="grid" style="margin-top:14px;"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./theme.js"></script>
+<script src="./app.js"></script>
+<script src="./favorites.js"></script>
+</body>
+</html>

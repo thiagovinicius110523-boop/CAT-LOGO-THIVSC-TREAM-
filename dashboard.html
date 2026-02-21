@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboard — ENTHIVSC STREAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand brand--link" href="./index.html" style="text-decoration:none;">
+      <div class="brand__mark">E</div>
+      <div class="brand__text">
+        <div class="brand__name">Dashboard</div>
+        <div class="brand__tag">Seu progresso e atalhos</div>
+      </div>
+    </a>
+
+    <div class="topbar__actions">
+      <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+      <a id="btnProfile" class="btn btn--ghost" href="./profile.html" style="display:none;">Perfil</a>
+      <a id="btnFavorites" class="btn btn--ghost" href="./favorites.html" style="display:none;">Favoritos</a>
+
+      <div id="userChip" class="userchip" style="display:none;">
+        <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
+        <div style="display:flex;flex-direction:column;line-height:1.1;">
+          <div id="userName" class="userchip__name">Usuário</div>
+          <div id="userRole" class="userchip__role">—</div>
+        </div>
+      </div>
+
+      <button id="btnLogout" class="btn btn--ghost" style="display:none;">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="appContent" style="display:none;">
+  <div id="console" class="console" style="display:none;margin-top:16px;"></div>
+
+  <section class="grid" style="margin-top:16px;">
+    <div class="panel">
+      <div class="meta">Cursos concluídos</div>
+      <div id="kpiDone" style="font-size:34px;font-weight:900;margin-top:6px;">—</div>
+    </div>
+    <div class="panel">
+      <div class="meta">Em andamento</div>
+      <div id="kpiDoing" style="font-size:34px;font-weight:900;margin-top:6px;">—</div>
+    </div>
+    <div class="panel">
+      <div class="meta">Favoritos</div>
+      <div id="kpiFav" style="font-size:34px;font-weight:900;margin-top:6px;">—</div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="font-weight:800;font-size:18px;">Continuar assistindo</div>
+      <a class="btn btn--ghost" href="./index.html">Ver catálogo</a>
+    </div>
+    <div class="divider"></div>
+    <div id="continueList" class="grid"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./theme.js"></script>
+<script src="./app.js"></script>
+<script src="./dashboard.js"></script>
+</body>
+</html>

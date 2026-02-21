@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Perfil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar__inner">
+    <a class="brand brand--link" href="./index.html" style="text-decoration:none;">
+      <div class="brand__mark">E</div>
+      <div class="brand__text">
+        <div class="brand__name">Perfil</div>
+        <div class="brand__tag">Conta • Avatar • Preferências</div>
+      </div>
+    </a>
+
+    <div class="topbar__actions">
+      <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+      <div id="userChip" class="userchip" style="display:none;">
+        <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
+        <div style="display:flex;flex-direction:column;line-height:1.1;">
+          <div id="userName" class="userchip__name">Usuário</div>
+          <div id="userRole" class="userchip__role">—</div>
+        </div>
+      </div>
+      <button id="btnLogout" class="btn btn--ghost" style="display:none;">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="appContent" style="display:none;">
+  <section class="panel">
+    <h1 class="h1">Seu Perfil</h1>
+    <p class="sub">Atualize nome, usuário e avatar.</p>
+
+    <div class="row" style="align-items:center; gap:14px;">
+      <img id="avatarPreview" src="./default-avatar.png" alt="Avatar" style="width:96px;height:96px;border-radius:999px;object-fit:cover;border:1px solid rgba(255,255,255,.12);" />
+      <div style="flex:1;">
+        <label class="label" for="avatarInput">Avatar (PNG/JPG/WEBP • até 3MB)</label>
+        <input id="avatarInput" class="input" type="file" accept="image/*" />
+        <div class="meta" style="margin-top:8px;">Dica: use 800×800 para melhor qualidade.</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:14px;">
+      <div>
+        <label class="label" for="display_name">Nome (exibição)</label>
+        <input id="display_name" class="input" type="text" placeholder="Seu nome" />
+      </div>
+      <div>
+        <label class="label" for="username">Usuário</label>
+        <input id="username" class="input" type="text" placeholder="seu_usuario" />
+      </div>
+    </div>
+
+    <div style="margin-top:14px; display:flex; gap:10px;">
+      <button id="btnSaveProfile" class="btn">Salvar</button>
+      <a class="btn btn--ghost" href="./index.html">Voltar</a>
+    </div>
+
+    <pre class="console" id="console" style="display:none; margin-top:14px;"></pre>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./supabase-config.js"></script>
+<script src="./app.js"></script>
+<script src="./theme.js"></script>
+<script src="./presence.js"></script>
+<script src="./profile.js"></script>
+</body>
+</html>
