@@ -14,4 +14,6 @@ window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5
  * Use quando estiver em GitHub Pages com subpasta, ex:
  * https://usuario.github.io/REPO/
  */
-window.APP_BASE_URL = window.APP_BASE_URL || (location.origin + location.pathname.replace(/\/[^\/]*$/, "/"));
+window.APP_BASE_URL = window.APP_BASE_URL || "https://thiagovinicius110523-boop.github.io/CAT-THIVSC-STREAM-V2/";
+
+
