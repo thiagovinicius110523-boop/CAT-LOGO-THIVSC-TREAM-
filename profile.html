@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Perfil — ENTHIVSC STREAM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <div class="brand">
+        <div class="brand__title">ENGTHIVSC STREAM</div>
+        <div class="brand__sub">Perfil</div>
+      </div>
+
+      <div class="topbar__actions">
+        <a class="btn btn--ghost" href="./index.html">Cursos</a>
+        <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+
+        <div id="userChip" class="userchip" style="display:none;">
+          <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
+          <div style="display:flex;flex-direction:column;line-height:1.1;">
+            <div id="userName" class="userchip__name">Usuário</div>
+            <div id="userRole" class="userchip__role">user</div>
+          </div>
+        </div>
+
+        <button id="btnLogout" class="btn" style="display:none;">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="appContent" style="display:none;">
+    <div class="panel">
+      <div class="panel__title">Dados do perfil</div>
+
+      <div class="row" style="gap:14px;align-items:flex-start">
+        <img id="avatarPreview" src="./default-avatar.png" alt="Avatar" style="width:96px;height:96px;border-radius:26px;object-fit:cover;border:1px solid rgba(255,255,255,.14)" />
+        <div style="flex:1">
+          <label class="label">Nome exibido</label>
+          <input id="displayName" class="input" placeholder="Ex: Thiago" />
+          <div style="height:10px"></div>
+          <label class="label">Username</label>
+          <input id="username" class="input" placeholder="Ex: thiago" />
+          <div class="muted" style="margin-top:8px;font-size:12px">O avatar recomenda 800×800.</div>
+          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
+            <input id="avatarFile" type="file" accept="image/*" class="input" />
+            <button id="btnUploadAvatar" class="btn btn--ghost">Enviar avatar</button>
+          </div>
+          <div style="margin-top:14px">
+            <button id="btnSave" class="btn">Salvar</button>
+            <span id="meta" class="muted" style="margin-left:10px"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <pre id="console" class="console" style="display:none;"></pre>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./theme.js"></script>
+  <script src="./presence.js"></script>
+  <script src="./app.js"></script>
+  <script src="./profile.js"></script>
+</body>
+</html>

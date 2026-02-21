@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Curso — ENTHIVSC STREAM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar__inner">
+      <div class="brand">
+        <div class="brand__title">ENGTHIVSC STREAM</div>
+        <div class="brand__sub">Curso</div>
+      </div>
+
+      <div class="topbar__actions">
+        <a class="btn btn--ghost" href="./profile.html">Perfil</a>
+        <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+
+        <div id="userChip" class="userchip" style="display:none;">
+          <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
+          <div style="display:flex;flex-direction:column;line-height:1.1;">
+            <div id="userName" class="userchip__name">Usuário</div>
+            <div id="userRole" class="userchip__role">user</div>
+          </div>
+        </div>
+
+        <button id="btnLogout" class="btn" style="display:none;">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" id="appContent" style="display:none;">
+    <a class="btn btn--ghost" href="./index.html">← Voltar</a>
+
+    <div class="hero" style="margin-top:14px;">
+      <div id="courseCover" class="hero__cover"></div>
+      <div class="hero__body">
+        <div id="courseTitle" class="hero__title">Curso</div>
+        <div id="courseSubtitle" class="hero__sub"></div>
+      </div>
+    </div>
+
+    <div id="modules"></div>
+
+    <pre id="console" class="console" style="display:none;"></pre>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./theme.js"></script>
+  <script src="./presence.js"></script>
+  <script src="./app.js"></script>
+  <script src="./course.js"></script>
+</body>
+</html>
