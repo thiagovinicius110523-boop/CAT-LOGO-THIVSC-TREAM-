@@ -1,72 +1,127 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Perfil — ENTHIVSC STREAM</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css" />
-</head>
-<body>
-  <header class="topbar">
-    <div class="container topbar__inner">
-      <div class="brand">
-        <div class="brand__title">ENGTHIVSC STREAM</div>
-        <div class="brand__sub">Perfil</div>
-      </div>
+const DEFAULT_AVATAR = "./default-avatar.png";
 
-      <div class="topbar__actions">
-        <a class="btn btn--ghost" href="./index.html">Cursos</a>
-        <a id="btnAdmin" class="btn btn--ghost" href="./admin.html" style="display:none;">Painel Admin</a>
+// profile.js — editar display_name/username e avatar
+(async () => {
 
-        <div id="userChip" class="userchip" style="display:none;">
-          <img id="userAvatar" class="userchip__avatar" src="./default-avatar.png" alt="Avatar" />
-          <div style="display:flex;flex-direction:column;line-height:1.1;">
-            <div id="userName" class="userchip__name">Usuário</div>
-            <div id="userRole" class="userchip__role">user</div>
-          </div>
-        </div>
+  const $ = (id) => document.getElementById(id);
+  const log = (m) => {
+    const el = $('console');
+    if (el) {
+      el.style.display = m ? 'block' : 'none';
+      el.textContent = m || '';
+    }
+  };
 
-        <button id="btnLogout" class="btn" style="display:none;">Sair</button>
-      </div>
-    </div>
-  </header>
+  await window.ENGTHIVSC.initSupabase();
+  await window.ENGTHIVSC_THEME?.applyTheme?.();
 
-  <main class="container" id="appContent" style="display:none;">
-    <div class="panel">
-      <div class="panel__title">Dados do perfil</div>
+  const sb = window.ENGTHIVSC.getSB();
 
-      <div class="row" style="gap:14px;align-items:flex-start">
-        <img id="avatarPreview" src="./default-avatar.png" alt="Avatar" style="width:96px;height:96px;border-radius:26px;object-fit:cover;border:1px solid rgba(255,255,255,.14)" />
-        <div style="flex:1">
-          <label class="label">Nome exibido</label>
-          <input id="displayName" class="input" placeholder="Ex: Thiago" />
-          <div style="height:10px"></div>
-          <label class="label">Username</label>
-          <input id="username" class="input" placeholder="Ex: thiago" />
-          <div class="muted" style="margin-top:8px;font-size:12px">O avatar recomenda 800×800.</div>
-          <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap">
-            <input id="avatarFile" type="file" accept="image/*" class="input" />
-            <button id="btnUploadAvatar" class="btn btn--ghost">Enviar avatar</button>
-          </div>
-          <div style="margin-top:14px">
-            <button id="btnSave" class="btn">Salvar</button>
-            <span id="meta" class="muted" style="margin-left:10px"></span>
-          </div>
-        </div>
-      </div>
-    </div>
+  const { data: userData } = await sb.auth.getUser();
+  if (!userData?.user) {
+    location.href = "./login.html";
+    return;
+  }
 
-    <pre id="console" class="console" style="display:none;"></pre>
-  </main>
+  const user = userData.user;
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase-config.js"></script>
-  <script src="./theme.js"></script>
-  <script src="./presence.js"></script>
-  <script src="./app.js"></script>
-  <script src="./profile.js"></script>
-</body>
-</html>
+  // Garantir que profile exista
+  const { data: profile, error: profileError } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!profile) {
+    await sb.from("profiles").insert({
+      user_id: user.id,
+      display_name: user.email,
+      username: user.email.split("@")[0]
+    });
+  }
+
+  // Recarregar profile
+  const { data: updatedProfile } = await sb
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  // Exibir dados
+  $("display_name").value = updatedProfile.display_name || "";
+  $("username").value = updatedProfile.username || "";
+
+  const avatarImg = $("avatarPreview");
+
+  if (updatedProfile.avatar_url) {
+    avatarImg.src = updatedProfile.avatar_url + "?t=" + Date.now();
+  } else {
+    avatarImg.src = DEFAULT_AVATAR;
+  }
+
+  // Salvar nome / username
+  $("btnSaveProfile").addEventListener("click", async () => {
+    const display_name = $("display_name").value.trim();
+    const username = $("username").value.trim();
+
+    const { error } = await sb
+      .from("profiles")
+      .update({ display_name, username })
+      .eq("user_id", user.id);
+
+    if (error) {
+      log("Erro ao salvar perfil: " + error.message);
+      return;
+    }
+
+    log("Perfil atualizado com sucesso ✅");
+  });
+
+  // Upload avatar
+  $("avatarInput").addEventListener("change", async (e) => {
+    try {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const ext = file.name.split(".").pop().toLowerCase();
+      const filePath = `avatars/${user.id}.${ext}`;
+
+      // Upload com upsert
+      const { error: uploadError } = await sb
+        .storage
+        .from("assets")
+        .upload(filePath, file, {
+          upsert: true,
+          cacheControl: "0"
+        });
+
+      if (uploadError) {
+        log("Erro avatar: " + uploadError.message);
+        return;
+      }
+
+      // Pegar URL pública
+      const { data: pub } = sb
+        .storage
+        .from("assets")
+        .getPublicUrl(filePath);
+
+      const avatarUrl = pub.publicUrl;
+
+      // Atualizar profile
+      await sb
+        .from("profiles")
+        .update({ avatar_url: avatarUrl })
+        .eq("user_id", user.id);
+
+      // Atualizar imagem imediatamente (quebra cache)
+      avatarImg.src = avatarUrl + "?t=" + Date.now();
+
+      log("Avatar atualizado com sucesso ✅");
+
+    } catch (err) {
+      log("Erro avatar: " + (err?.message || err));
+    }
+  });
+
+})();
