@@ -8,15 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./style.css" />
 </head>
-  <script>
-document.addEventListener("DOMContentLoaded", async () => {
-  try {
-    await window.ENGTHIVSC.requireLogin();
-  } catch (e) {
-    console.error("Erro requireLogin:", e);
-  }
-});
-</script>
 <body>
 <header class="topbar">
   <div class="container topbar__inner">
@@ -50,22 +41,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 <main class="container" id="appContent" style="display:none;">
   <h1 class="h1">Cursos</h1>
   <p class="sub">Selecione um curso para ver módulos e conteúdo.</p>
-<div class="row" style="margin:14px 0; gap:10px; align-items:center;">
-  <input id="search" class="input" style="flex:1" type="search" placeholder="Buscar curso..." />
-  <select id="filterCategory" class="input" style="width:220px">
-    <option value="">Todas categorias</option>
-  </select>
-  <button id="toggleFav" class="btn btn--ghost" title="Mostrar só favoritos">☆</button>
-</div>
+
+  <div class="row" style="margin:14px 0; gap:10px; align-items:center;">
+    <input id="search" class="input" style="flex:1" type="search" placeholder="Buscar curso..." />
+    <select id="filterCategory" class="input" style="width:220px">
+      <option value="">Todas categorias</option>
+    </select>
+    <button id="toggleFav" class="btn btn--ghost" title="Mostrar só favoritos">☆</button>
+  </div>
 
   <div id="coursesList" class="grid"></div>
   <pre class="console" id="console" style="display:none;"></pre>
 </main>
+
+<!-- ORDEM CORRETA DOS SCRIPTS (dependências) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-config.js"></script>
 <script src="./theme.js"></script>
 <script src="./presence.js"></script>
 <script src="./app.js"></script>
+
+<!-- Proteção: só roda DEPOIS do app.js (window.ENGTHIVSC existe) -->
+<script>
+(async () => {
+  try {
+    if (!window.ENGTHIVSC?.requireLogin) {
+      console.error("requireLogin() indisponível: verifique se app.js carregou.");
+      return;
+    }
+    await window.ENGTHIVSC.requireLogin();
+  } catch (e) {
+    console.error("Erro requireLogin:", e);
+  }
+})();
+</script>
+
 <script src="./index.js"></script>
 </body>
 </html>
